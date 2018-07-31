@@ -48,59 +48,59 @@ require('./config/passport')(passport)
 
 
 ////////////socket routes
-// io.on('connection', function(socket){
+io.on('connection', function(socket){
 
-//     socket.on("user-conneted",(user)=>{
-//         User.findById(user,(err,user)=>{
-//              user.online = true;
-//             user.save(()=>{
-//               User.find({},(err,user)=>{
-//                 io.emit('updated-list',user)
-//               })
+    socket.on("user-conneted",(user)=>{
+        User.findById(user,(err,user)=>{
+             user.online = true;
+            user.save(()=>{
+              User.find({},(err,user)=>{
+                io.emit('updated-list',user)
+              })
               
-//             })
-//         })
-//     })
+            })
+        })
+    })
 
-//     socket.on('disconnect', ()=>{
-//       setTimeout(()=>{
-//          User.find({},(err,user)=>{
-//           io.emit('updated-list',user)
-//          }) 
-//         }, 2000);
+    socket.on('disconnect', ()=>{
+      setTimeout(()=>{
+         User.find({},(err,user)=>{
+          io.emit('updated-list',user)
+         }) 
+        }, 2000);
 
-//       console.log('user has disconnected');
-//       User.find({},(err,users)=>{
-//         console.log(users)
-//         for(i = 0; i < users.length; i++)
-//         {
-//           users[i].online = false
-//           users[i].save()
-//         }
+      console.log('user has disconnected');
+      User.find({},(err,users)=>{
+        console.log(users)
+        for(i = 0; i < users.length; i++)
+        {
+          users[i].online = false
+          users[i].save()
+        }
         
-//       })
-//       io.emit('whos-still-here')
-//     });
+      })
+      io.emit('whos-still-here')
+    });
 
 
-//     socket.on("user-still-online",(user)=>{
-//       User.findById(user,(err,user)=>{
-//         user.online = true;
-//         user.save()
-//       })
-//     })
+    socket.on("user-still-online",(user)=>{
+      User.findById(user,(err,user)=>{
+        user.online = true;
+        user.save()
+      })
+    })
 
-//     socket.on('log-off', (user)=>{
-//       User.findById(user.id,(err,user)=>{
-//           user.online = false
-//           user.save(()=>{
-//             User.find({},(err,user)=>{
-//               io.emit('updated-list',user)
-//             })
+    socket.on('log-off', (user)=>{
+      User.findById(user.id,(err,user)=>{
+          user.online = false
+          user.save(()=>{
+            User.find({},(err,user)=>{
+              io.emit('updated-list',user)
+            })
             
-//           })
-//       })
-//     });
+          })
+      })
+    });
 
 
 
@@ -110,12 +110,12 @@ require('./config/passport')(passport)
 
 
 
-//     socket.on('message', (msg)=>{
-//       console.log(msg);
-//       io.emit('message', {type:'new-message', text: msg});    
-//     });
+    socket.on('message', (msg)=>{
+      console.log(msg);
+      io.emit('message', {type:'new-message', text: msg});    
+    });
 
-//   });
+  });
   
 ////////////////////////////
   
