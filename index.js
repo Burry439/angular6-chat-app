@@ -31,6 +31,7 @@ const port = process.env.PORT || 8080;
 
 
 const users = require('./routes/users')
+app.use('/users', users)
 
 app.use(passport.initialize())
 
