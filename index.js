@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const config = require('./config/database')
 const passport = require('passport')
 const User = require('./models/user')
-
+const Chat = require('./models/chat')
 mongoose.connect(config.database)
 
 mongoose.connection.on('connected', ()=>{
@@ -31,8 +31,11 @@ const port = process.env.PORT || 8080;
 
 
 const users = require('./routes/users')
+const chats = require('./routes/chats')
+
 require('./config/passport')(passport)
 
+app.use('/chats', chats)
 app.use('/users', users)
 
 app.use(passport.initialize())
@@ -113,9 +116,16 @@ io.on('connection', function(socket){
 
 
 
-    socket.on('message', (msg)=>{
-      console.log(msg);
-      io.emit('message', {type:'new-message', text: msg});    
+    socket.on('message', (chatInfo)=>{
+      console.log(chatInfo.msg +  ' ' + chatInfo.me.id + " " + chatInfo.you._id);
+
+      Chat.find({$or:[ {users:[chatInfo.me.id,chatInfo.you._id]  } , {users:[chatInfo.you._id,chatInfo.me.id]}   ]},(err,chat)=>{
+        console.log("chat " +  chat  + " chat ")
+        chat[0].messages.push(chatInfo.msg)
+        chat[0].save(()=>{
+          io.emit('message', {type:'new-message', chat: chatInfo});
+        })
+      })
     });
 
   });
