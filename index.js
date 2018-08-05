@@ -111,7 +111,9 @@ io.on('connection', function(socket){
 
 
 
-   
+    socket.on('join-room',(roomId)=>{
+      socket.join(roomId)
+    })
 
 
 
@@ -123,7 +125,7 @@ io.on('connection', function(socket){
         console.log("chat " +  chat  + " chat ")
         chat[0].messages.push(chatInfo.msg)
         chat[0].save(()=>{
-          io.emit('message', {type:'new-message', chat: chatInfo});
+          io.to(chat[0]._id).emit('message', {type:'new-message', chat: chatInfo});
         })
       })
     });
