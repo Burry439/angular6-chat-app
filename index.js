@@ -56,45 +56,47 @@ app.get('*', (req, res) => {
 ////////////socket routes
 io.on('connection', function(socket){
 
+
+
+
+
     socket.on("user-conneted",(user)=>{
         User.findById(user,(err,user)=>{
-             user.online = true;
-            user.save(()=>{
-              User.find({},(err,user)=>{
-                io.emit('updated-list',user)
-              })
-              
-            })
-        })
+          user.online = true;
+          user.socketId = socket.id
+           console.log(socket.id + " has connected")
+         user.save(()=>{
+             User.find({},(err,user)=>{
+               io.emit('updated-list',user)
+             })
+             
+         })
+     })
     })
+
+
 
     socket.on('disconnect', ()=>{
-      setTimeout(()=>{
-         User.find({},(err,user)=>{
-          io.emit('updated-list',user)
-         }) 
-        }, 2000);
-
-      console.log('user has disconnected');
-      User.find({},(err,users)=>{
-        console.log(users)
-        for(i = 0; i < users.length; i++)
-        {
-          users[i].online = false
-          users[i].save()
-        }
-        
-      })
-      io.emit('whos-still-here')
-    });
-
-
-    socket.on("user-still-online",(user)=>{
-      User.findById(user,(err,user)=>{
-        user.online = true;
-        user.save()
+      User.find({socketId:socket.id},(err,user)=>{
+             if(user[0] != undefined)
+             {
+              user[0].online = false
+              console.log("the query " + user + ": ")
+              user[0].save(()=>{
+  
+                  User.find({},(err,user)=>{
+                    io.emit("updated-list",user)
+                  })
+              })
+             }
+             else
+             {
+               console.log("to slow")
+             }
+          
       })
     })
+
 
     socket.on('log-off', (user)=>{
       User.findById(user.id,(err,user)=>{
@@ -112,23 +114,60 @@ io.on('connection', function(socket){
 
 
     socket.on('join-room',(roomId)=>{
+      console.log("joined " + roomId)
       socket.join(roomId)
+    })
+
+
+
+    socket.on('left-room',(roomId)=>{
+      console.log("left " + roomId)
+      socket.leave(roomId)
     })
 
 
 
 
     socket.on('message', (chatInfo)=>{
-      console.log(chatInfo.msg +  ' ' + chatInfo.me.id + " " + chatInfo.you._id);
 
-      Chat.find({$or:[ {users:[chatInfo.me.id,chatInfo.you._id]  } , {users:[chatInfo.you._id,chatInfo.me.id]}   ]},(err,chat)=>{
-        console.log("chat " +  chat  + " chat ")
+
+
+      Chat.find({$or:[ {users:[chatInfo.me,chatInfo.you]  } , {users:[chatInfo.you,chatInfo.me]}   ]},(err,chat)=>{
+
+
+         console.log("chat " +  chat  + " chat ")
         chat[0].messages.push(chatInfo.msg)
         chat[0].save(()=>{
+
+                usersInRoom = io.sockets.adapter.rooms[chat[0]._id]
+                // console.log(usersInRoom)
+
+                User.findById(chatInfo.you,(err,user)=>{
+                    if(!usersInRoom.sockets.hasOwnProperty(user.socketId))
+                    {
+                        console.log("add to room")
+                        console.log("your socket id  "+chatInfo.me)
+                        let me = {_id:chatInfo.me}
+                        io.to(user.socketId).emit('got-message', me);    
+                    }
+                    else
+                    {
+                       console.log("already in room")
+                    }
+                  }) 
           io.to(chat[0]._id).emit('message', {type:'new-message', chat: chatInfo});
         })
       })
     });
+
+
+
+
+
+
+
+
+
 
   });
   

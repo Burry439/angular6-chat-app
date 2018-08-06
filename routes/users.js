@@ -13,7 +13,8 @@ router.post('/register',(req,res,next)=>{
         email: req.body.email,
         lastname: req.body.lastname,
         password: req.body.password,       
-        online: false
+        online: false,
+        
     })
     User.findOne({email:req.body.email},(err,user)=>{
         if(user)    
