@@ -7,9 +7,11 @@ const chatSchema = mongoose.Schema({
         require: true
     }],
     messages:[{
-        type:String,
-        require:true
-    }]
+        message:String,
+        from:String,
+        date:String,
+        time:String
+    }],
 })
 
 const Chat = module.exports = mongoose.model("Chat", chatSchema)

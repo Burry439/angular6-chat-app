@@ -130,32 +130,51 @@ io.on('connection', function(socket){
 
     socket.on('message', (chatInfo)=>{
 
+      ////depending on if your starting a conversation or replying your info comes out difffrent hence the check
+      let you = ''
+      if(chatInfo.you._id != undefined)
+      {
+          you = chatInfo.you._id
+      }
+      else
+      {
+          you = chatInfo.you.id
+      }
+      console.log("chat info " + you + ":::::::::::")
+
+      //////////////////////////////////////////////////////////////
 
 
-      Chat.find({$or:[ {users:[chatInfo.me,chatInfo.you]  } , {users:[chatInfo.you,chatInfo.me]}   ]},(err,chat)=>{
 
+      Chat.find({$or:[ {users:[chatInfo.me.id, you]  } , {users:[you,chatInfo.me.id]}   ]},(err,chat)=>{
 
-         console.log("chat " +  chat  + " chat ")
-        chat[0].messages.push(chatInfo.msg)
-        chat[0].save(()=>{
+        let theChat;
 
-                usersInRoom = io.sockets.adapter.rooms[chat[0]._id]
-                // console.log(usersInRoom)
+      
+          console.log("yes array " + chat)
+          theChat = chat[0]
+          chatInfo.chatId = chat[0]._id
 
-                User.findById(chatInfo.you,(err,user)=>{
-                    if(!usersInRoom.sockets.hasOwnProperty(user.socketId))
-                    {
-                        console.log("add to room")
-                        console.log("your socket id  "+chatInfo.me)
-                        let me = {_id:chatInfo.me}
-                        io.to(user.socketId).emit('got-message', me);    
-                    }
-                    else
-                    {
+        theChat.messages.push({message:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time })
+        theChat.save(()=>{
+
+                usersInRoom = io.sockets.adapter.rooms[theChat._id]
+                 console.log("users in this room " +usersInRoom)
+
+                User.findById(you,(err,user)=>{
+                    // if(!usersInRoom.sockets.hasOwnProperty(user.socketId))
+                    // {
+                        // console.log("add to room")
+                        // console.log("your socket id  "+chatInfo.me)
+                        // let me = {_id:chatInfo.me.id}
+                        io.to(user.socketId).emit('got-message', chatInfo.me);    
+                    // }
+                    // else
+                    // {
                        console.log("already in room")
-                    }
+                    // }
                   }) 
-          io.to(chat[0]._id).emit('message', {type:'new-message', chat: chatInfo});
+          io.to(theChat._id).emit('message', {type:'new-message', chat: {roomId:theChat._id ,msg:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time} });
         })
       })
     });

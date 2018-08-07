@@ -60,7 +60,7 @@ router.post('/authenticate', (req,res,next)=>{
                 
                 const token = jwt.sign({data:user}, config.secret, 
                 {
-                  expiresIn:6000000,
+                  expiresIn:7200000,
                 })  
                 res.json({
                 success:true,
