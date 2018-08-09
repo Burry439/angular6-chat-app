@@ -350,6 +350,10 @@ Apache License
  See the License for the specific language governing permissions and
  limitations under the License.
 
+@angular/animations@6.1.0
+MIT
+MIT
+
 tslib@1.9.3
 Apache-2.0
 Apache License
