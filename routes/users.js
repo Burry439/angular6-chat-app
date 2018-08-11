@@ -4,6 +4,100 @@ const User = require('../models/user')
 const passport = require('passport')
 const jwt = require("jsonwebtoken")
 const config = require("../config/database")
+const multer = require('multer')
+var cloudinary = require('cloudinary');
+
+
+////////////for storing files/////////////////////////
+cloudinary.config({ 
+    cloud_name: 'dude439', 
+    api_key: '833245911756313', 
+    api_secret: 'aBPLhs-F8eFrzo-1TVlN1o1b_ms' 
+  });
+////////////////////////////////////////////////////
+
+
+
+
+
+const storage = multer.diskStorage({
+    destination: (req,file,cb)=>{
+        cb(null, './uploads/')
+    },
+    filename: (req,file,cb) =>{
+        cb(null, file.originalname)
+    }
+});
+
+const fileFilter = (req,file,cb)=>{
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg')
+    {
+        cb(null,true)
+    }
+    else
+    {
+        req.fileValidationError = 'goes wrong on the mimetype';
+        return cb(null, false, new Error('goes wrong on the mimetype'));
+    }
+    
+    
+}
+
+const upload = multer({
+    storage: storage, 
+    limits: {fieldSize: 1024 * 1024 * 5},
+    fileFilter: fileFilter
+})
+
+router.put('/profilephoto', upload.single('profilePic'), (req,res,next)=>
+{   
+
+    if(req.fileValidationError) {
+        console.log("yo")
+       return res.json("wrong");
+  }
+
+
+    const id = JSON.parse(req.headers.authorization)
+    cloudinary.uploader.upload(req.file.path, function(result) { 
+        console.log("resrult : " + result.url) 
+
+        User.findById(id.id, (err,user)=>{
+            user.profilePic = result.secure_url
+            user.save((err,updatedObject)=>{
+                res.json(updatedObject)
+            })  
+        })
+    });  
+})
+
+router.put('/wallphoto', upload.single('wallPic'), (req,res,next)=>
+{   
+
+    if(req.fileValidationError) {
+        console.log("yo")
+       return res.json("wrong");
+  }
+
+
+    const id = JSON.parse(req.headers.authorization)
+    cloudinary.uploader.upload(req.file.path, function(result) { 
+        console.log("resrult : " + result.url) 
+
+        User.findById(id.id, (err,user)=>{
+            user.wallPic = result.secure_url
+            user.save((err,updatedObject)=>{
+                res.json(updatedObject)
+            })  
+        })
+    });  
+})
+
+
+
+
+
+
 
 router.post('/register',(req,res,next)=>{
     console.log(req.body)
@@ -14,6 +108,9 @@ router.post('/register',(req,res,next)=>{
         lastname: req.body.lastname,
         password: req.body.password,       
         online: false,
+        profilePic: 'http://res.cloudinary.com/dude439/image/upload/v1530090215/samples/cloudinary-logo-vector.svg',
+        wallPic:'http://res.cloudinary.com/dude439/image/upload/v1530090227/samples/landscapes/architecture-signs.jpg'
+
         
     })
     User.findOne({email:req.body.email},(err,user)=>{
@@ -85,6 +182,13 @@ router.post('/authenticate', (req,res,next)=>{
      
 
         })
+    })
+})
+
+router.get('/profile', passport.authenticate('jwt', {session: false}), (req,res)=>{                                                                         
+    User.findById(req.user._id,(err,user)=>{
+                console.log(user.attending)
+                res.json(user)     
     })
 })
 

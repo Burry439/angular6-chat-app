@@ -29,6 +29,11 @@ const userSchema = mongoose.Schema({
         type:String,
         require: false
     },
+    wallPic: 
+    {
+        type:String,
+        require: false
+    },
     online:
     {
         type:Boolean,

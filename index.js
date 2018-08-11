@@ -11,6 +11,8 @@ const config = require('./config/database')
 const passport = require('passport')
 const User = require('./models/user')
 const Chat = require('./models/chat')
+const Post = require('./models/post')
+
 mongoose.connect(config.database)
 
 mongoose.connection.on('connected', ()=>{
@@ -32,11 +34,13 @@ const port = process.env.PORT || 8080;
 
 const users = require('./routes/users')
 const chats = require('./routes/chats')
+const posts = require('./routes/posts')
 
 require('./config/passport')(passport)
 
 app.use('/chats', chats)
 app.use('/users', users)
+app.use('/posts', posts)
 
 app.use(passport.initialize())
 
@@ -58,6 +62,49 @@ io.on('connection', function(socket){
 
 
 
+  socket.on("new-post",(postInfo)=>{
+
+    console.log("post info  " +postInfo.from)
+
+    let post = new Post({
+        from: postInfo.from,
+        post: postInfo.post,
+        image:postInfo.image || ''
+    })
+    post.save((err,post)=>{
+        Post.findById(post._id).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+          io.emit('new-post',posts)
+      })
+    })
+})
+
+socket.on("delete-post",(postId)=>{
+
+  console.log("post info  " +postId)
+
+  Post.findByIdAndRemove(postId,(err,post)=>{
+    console.log(post)
+    io.emit('deleted-post',post)
+  })
+
+})
+
+
+socket.on("edit-post",(postInfo)=>{
+
+  console.log("post info  " + postInfo._id)
+
+  Post.findById(postInfo._id,(err,post)=>{
+    console.log(post.post)
+
+    post.post = postInfo.post
+    console.log(post.post)
+    post.save((err,post)=>{
+      io.emit('edited-post',post)
+    })
+  })
+
+})
 
 
     socket.on("user-conneted",(user)=>{
