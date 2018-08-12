@@ -5,6 +5,7 @@ const Post = require('../models/post')
 router.get('/getposts',(req,res)=>{
 
     Post.find({}).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+        posts.reverse()
         res.json(posts)
     })
         
@@ -15,6 +16,8 @@ router.get('/getposts',(req,res)=>{
  router.get('/getmyposts', (req,res)=>{
      console.log(req.headers.authorization + " ffff ")
      Post.find({from:req.headers.authorization}).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+         console.log(posts)
+         posts.reverse()
         res.json(posts)
     })
  })
