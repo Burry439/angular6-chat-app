@@ -12,6 +12,8 @@ const passport = require('passport')
 const User = require('./models/user')
 const Chat = require('./models/chat')
 const Post = require('./models/post')
+const Comment = require('./models/comment')
+
 
 mongoose.connect(config.database)
 
@@ -61,7 +63,55 @@ app.get('*', (req, res) => {
 io.on('connection', function(socket){
 
 
+  ///////////////////////comment sockets///////////////////////////
 
+  socket.on("add-new-comment",(commentInfo)=>{
+
+    console.log(commentInfo)
+    let comment = new Comment({
+        post: commentInfo.postId,
+        from: commentInfo.from,
+        comment: commentInfo.comment,
+    })
+    comment.save((err,comment)=>{
+        Post.findById(commentInfo.postId,(err,post)=>{
+          post.comments.push(comment._id)
+          post.save((err,post)=>{
+            io.emit('new-comment',post, commentInfo.from, commentInfo.postId)
+          })
+        })
+      })
+    })
+
+
+    socket.on("delete-comment",(commentId)=>{
+
+      Comment.findByIdAndRemove(commentId,(err,comment)=>{
+        console.log(comment)
+        io.emit('deleted-comment',comment)
+      })
+    
+    })
+
+    socket.on("edit-comment",(commentInfo)=>{
+      console.log("comment info " + commentInfo.comment)
+      Comment.findById(commentInfo.id,(err,comment)=>{
+        console.log(comment)
+        comment.comment = commentInfo.comment
+        comment.save((err,comment)=>{
+          let channel = 'edited-comment' +comment._id
+          console.log(channel)
+          io.emit('edited-comment'   ,comment)
+        })
+      })
+    
+    })
+
+/////////////////////////////////////////////////////////////////
+
+
+
+////////////////////post sockets//////////////////////////////////
   socket.on("new-post",(postInfo)=>{
 
     console.log("post info  " +postInfo.from)
@@ -105,8 +155,10 @@ socket.on("edit-post",(postInfo)=>{
   })
 
 })
+///////////////////////////////////////////
 
 
+//////////////////user sockets/////////////////////////
     socket.on("user-conneted",(user)=>{
         User.findById(user,(err,user)=>{
           user.online = true;
@@ -158,7 +210,10 @@ socket.on("edit-post",(postInfo)=>{
     });
 
 
+/////////////////////////////////////////////
 
+
+////////////chat sockets/////////////////////////
 
     socket.on('join-room',(roomId)=>{
       console.log("joined " + roomId)
@@ -225,12 +280,6 @@ socket.on("edit-post",(postInfo)=>{
         })
       })
     });
-
-
-
-
-
-
 
 
 
