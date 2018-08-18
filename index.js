@@ -72,6 +72,7 @@ io.on('connection', function(socket){
         post: commentInfo.postId,
         from: commentInfo.from,
         comment: commentInfo.comment,
+        time: commentInfo.time
     })
     comment.save((err,comment)=>{
         Post.findById(commentInfo.postId,(err,post)=>{
@@ -94,14 +95,11 @@ io.on('connection', function(socket){
     })
 
     socket.on("edit-comment",(commentInfo)=>{
-      console.log("comment info " + commentInfo.comment)
       Comment.findById(commentInfo.id,(err,comment)=>{
         console.log(comment)
         comment.comment = commentInfo.comment
         comment.save((err,comment)=>{
-          let channel = 'edited-comment' +comment._id
-          console.log(channel)
-          io.emit('edited-comment'   ,comment)
+          io.emit('edited-comment',comment)
         })
       })
     
@@ -119,7 +117,8 @@ io.on('connection', function(socket){
     let post = new Post({
         from: postInfo.from,
         post: postInfo.post,
-        image:postInfo.image || ''
+        image:postInfo.image || '',
+        time:postInfo.time
     })
     post.save((err,post)=>{
         Post.findById(post._id).populate('from','firstname lastname profilePic').exec((err,posts)=>{
@@ -257,7 +256,7 @@ socket.on("edit-post",(postInfo)=>{
           theChat = chat[0]
           chatInfo.chatId = chat[0]._id
 
-        theChat.messages.push({message:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time })
+        theChat.messages.push({message:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time,seen:false})
         theChat.save(()=>{
 
                 usersInRoom = io.sockets.adapter.rooms[theChat._id]
@@ -276,7 +275,7 @@ socket.on("edit-post",(postInfo)=>{
                        console.log("already in room")
                     // }
                   }) 
-          io.to(theChat._id).emit('message', {type:'new-message', chat: {roomId:theChat._id ,msg:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time} });
+          io.to(theChat._id).emit('message', {type:'new-message', chat: {roomId:theChat._id ,msg:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time,seen:false} });
         })
       })
     });
@@ -284,7 +283,69 @@ socket.on("edit-post",(postInfo)=>{
 
 
 
+
+
+
+      
+    socket.on('seen-message',(chatInfo)=>{
+
+      let you = ''
+      if(chatInfo.you._id != undefined)
+      {
+          you = chatInfo.you._id
+      }
+      else
+      {
+          you = chatInfo.you.id
+      }
+      
+      console.log(chatInfo)
+      Chat.find({$or:[ {users:[chatInfo.me.id, you]  } , {users:[you,chatInfo.me.id]}]},(err,chat)=>{
+          if(chat[0].messages[chat[0].messages.length - 1].seen != undefined)
+          {
+              chat[0].messages[chat[0].messages.length - 1].seen = true
+              chat[0].save((err,chat)=>{
+              io.to(chat._id).emit('saw-message', chat._id);
+            })
+          }     
+       })
+    })
+
+
+
+
+     socket.on('typing',(chatInfo)=>{
+
+      
+      let you = ''
+      if(chatInfo.you._id != undefined)
+      {
+          you = chatInfo.you._id
+      }
+      else
+      {
+          you = chatInfo.you.id
+      }
+
+
+      Chat.find({$or:[ {users:[chatInfo.me.id, you]  } , {users:[you,chatInfo.me.id]}]},(err,chat)=>{
+        
+        socket.to(chat[0]._id).emit('typing', chat[0]._id);
+        })   
+     })
+
+
+
+
+
+
+
+      //////////////////////end of connection function
   });
+
+
+
+
   
 ////////////////////////////
   

@@ -10,7 +10,8 @@ const chatSchema = mongoose.Schema({
         message:String,
         from:String,
         date:String,
-        time:String
+        time:String,
+        seen:false
     }],
 })
 

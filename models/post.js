@@ -20,7 +20,12 @@ const postSchema = mongoose.Schema({
     comments: [{
          type: mongoose.Schema.Types.ObjectId, ref: 'Comment',
          require: true
-     }]
+     }],
+     time:
+     {
+         type:Object,
+         require:true
+     }
 
 })
 

@@ -31,7 +31,8 @@ router.post('/getchat',(req,res)=>{
         {   
             let chat = new Chat({
                 users:[req.body.me, you],
-                messages:[]
+                messages:[],
+                
             })
             chat.save(()=>{
                 console.log("not found ")

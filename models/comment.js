@@ -15,6 +15,11 @@ const commentSchema = mongoose.Schema({
     {
         type:String,
         require:true
+    },
+    time:
+    {
+        type:Object,
+        require:true
     }
 
 
