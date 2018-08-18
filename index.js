@@ -28,7 +28,7 @@ mongoose.connection.on('error', (err)=>{
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
  app.use(express.static(path.join(__dirname, 'public')));
 const port = process.env.PORT || 8080;
 
@@ -336,8 +336,9 @@ socket.on("edit-post",(postInfo)=>{
 
 
 
-
-
+     socket.on('image',(posts)=>{
+      io.emit('new-post',posts)
+     })
 
 
       //////////////////////end of connection function

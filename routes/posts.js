@@ -2,6 +2,95 @@ const express = require('express')
 const router = express.Router()
 const Post = require('../models/post')
 const Comment = require('../models/comment')
+const multer = require('multer')
+var cloudinary = require('cloudinary');
+
+
+////////////for storing files/////////////////////////
+cloudinary.config({ 
+    cloud_name: 'dude439', 
+    api_key: '833245911756313', 
+    api_secret: 'aBPLhs-F8eFrzo-1TVlN1o1b_ms' 
+  });
+////////////////////////////////////////////////////
+
+
+
+
+
+const storage = multer.diskStorage({
+    destination: (req,file,cb)=>{
+        cb(null, './uploads/')
+    },
+    filename: (req,file,cb) =>{
+        cb(null, file.originalname)
+    }
+});
+
+const fileFilter = (req,file,cb)=>{
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg')
+    {
+        cb(null,true)
+    }
+    else
+    {
+        req.fileValidationError = 'goes wrong on the mimetype';
+        return cb(null, false, new Error('goes wrong on the mimetype'));
+    }
+    
+    
+}
+
+const upload = multer({
+    storage: storage, 
+    limits: {fieldSize: 1024 * 1024 * 5},
+      fileFilter: fileFilter
+})
+
+router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
+    {
+
+        // let postInfo = JSON.parse(req.headers.authorization)
+        // console.log("headers :00"+ postInfo.from + ": 00headers")
+    if(req.fileValidationError) {
+        console.log("yo")
+       return res.json("wrong");
+  }
+        let image = ''
+          console.log(req.body.imageInfo)
+         cloudinary.uploader.upload(req.file.path, function(result) { 
+         console.log("resrult : " + result.url) 
+         image = result.url
+})
+
+
+
+    let post = new Post(
+    {
+        from:postInfo.from,
+        post:postInfo.post,
+        image: image,
+        comments: [],
+        time:postInfo.time    
+    }
+)
+
+
+
+
+console.log(post)
+    post.save((err,post)=>{
+        post.populate('from','firstname lastname profilePic').exec((err,posts)=>{
+            res.json(posts)
+    }); 
+
+ })
+
+})
+
+
+
+
 
 router.get('/getposts',(req,res)=>{
 
@@ -35,5 +124,8 @@ router.get('/getposts',(req,res)=>{
         
 
  })
+
+
+
 
  module.exports = router
