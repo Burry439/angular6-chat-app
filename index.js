@@ -79,7 +79,7 @@ io.on('connection', function(socket){
           post.comments.push(comment._id)
           post.save((err,post)=>{
             console.log( commentInfo)
-            socket.broadcast.emit('new-comment',post, commentInfo.from, commentInfo.postId, commentInfo.firstname,commentInfo.lastname)
+            io.emit('new-comment',post, commentInfo.from, commentInfo.postId, commentInfo.firstname,commentInfo.lastname)
           })
         })
       })
