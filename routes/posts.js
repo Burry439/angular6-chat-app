@@ -85,6 +85,8 @@ router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
         
             post.save((err,post)=>{
 
+                ///mongoose will not let me populate after saving so i need to find the post again 
+
                 Post.findById(post._id)
                 .populate('from','firstname lastname profilePic').exec((err,posts)=>{
                     res.json(posts)
