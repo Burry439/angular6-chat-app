@@ -48,43 +48,56 @@ const upload = multer({
 })
 
 router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
-    {
+{
+    let image = ''
 
-        // let postInfo = JSON.parse(req.headers.authorization)
-        // console.log("headers :00"+ postInfo.from + ": 00headers")
+    
+    console.log(req.file)
+
+    let postInfo = JSON.parse(req.body.from)
+
+// console.log("from::::::::::::::: " + postInfo.post)
+
     if(req.fileValidationError) {
         console.log("yo")
        return res.json("wrong");
   }
-        let image = ''
-          console.log(req.body.imageInfo)
-         cloudinary.uploader.upload(req.file.path, function(result) { 
-         console.log("resrult : " + result.url) 
-         image = result.url
+        
+         cloudinary.uploader.upload(req.file.path, (result)=> { 
+
+            console.log("Inside cloudinary function .........................")
+
+          console.log("resrult : " + result.url) 
+
+
+         let post = new Post(
+            {
+                from:postInfo.from,
+                post:postInfo.post,
+                image: result.url,       
+                comments: [],
+                time:postInfo.time    
+            }
+        )
+        
+        
+        console.log("the post " + post)
+        
+            post.save((err,post)=>{
+
+                Post.findById(post._id)
+                .populate('from','firstname lastname profilePic').exec((err,posts)=>{
+                    res.json(posts)
+             }); 
+        
+         })
+
+
 })
 
 
 
-    let post = new Post(
-    {
-        from:postInfo.from,
-        post:postInfo.post,
-        image: image,
-        comments: [],
-        time:postInfo.time    
-    }
-)
 
-
-
-
-console.log(post)
-    post.save((err,post)=>{
-        post.populate('from','firstname lastname profilePic').exec((err,posts)=>{
-            res.json(posts)
-    }); 
-
- })
 
 })
 
