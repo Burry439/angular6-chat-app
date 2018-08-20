@@ -306,7 +306,7 @@ socket.on("edit-post",(postInfo)=>{
           {
               chat[0].messages[chat[0].messages.length - 1].seen = true
               chat[0].save((err,chat)=>{
-              io.to(chat._id).emit('saw-message', chat._id);
+              io.to(chat._id).emit('saw-message', chat._id, chatInfo.me.id);
             })
           }     
        })
