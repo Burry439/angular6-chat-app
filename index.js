@@ -341,6 +341,10 @@ socket.on("edit-post",(postInfo)=>{
       io.emit('new-post',posts)
      })
 
+     socket.on('new-profilePic',(profilePic,id)=>{
+      io.emit('new-profilePic',profilePic,id)
+     })
+
 
       //////////////////////end of connection function
   });
