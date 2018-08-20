@@ -192,6 +192,13 @@ router.get('/profile', passport.authenticate('jwt', {session: false}), (req,res)
     })
 })
 
-
+router.get('/otherprofile', (req,res)=>{  
+    console.log(req.headers.authorization)
+     
+    User.findById(req.headers.authorization,(err,user)=>{
+                console.log(user)
+                res.json(user)     
+    })
+})
 
 module.exports = router

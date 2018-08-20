@@ -129,7 +129,14 @@ router.get('/getposts',(req,res)=>{
     })
  })
 
-
+ router.get('/getotherposts', (req,res)=>{
+    console.log(req.headers.authorization + " ffff ")
+    Post.find({from:req.headers.authorization}).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+        console.log(posts)
+        posts.reverse()
+       res.json(posts)
+   })
+})
 
  router.get('/getcomments',(req,res)=>{
     console.log( " yo  " + " " +req.headers.authorization)
