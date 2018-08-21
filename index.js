@@ -79,7 +79,7 @@ io.on('connection', function(socket){
           post.comments.push(comment._id)
           post.save((err,post)=>{
             console.log( commentInfo)
-            io.emit('new-comment',post, commentInfo.from, commentInfo.postId, commentInfo.firstname,commentInfo.lastname)
+            io.emit('new-comment',post, commentInfo.comment,commentInfo.from, commentInfo.postId, commentInfo.firstname,commentInfo.lastname)
           })
         })
       })
@@ -341,10 +341,15 @@ socket.on("edit-post",(postInfo)=>{
       io.emit('new-post',posts)
      })
 
-     socket.on('new-profilePic',(profilePic,id)=>{
-      io.emit('new-profilePic',profilePic,id)
+     socket.on('new-profilePic',(profilePic,id, firstname,lastname)=>{
+      io.emit('new-profilePic',profilePic,id, firstname,lastname)
      })
 
+
+
+     socket.on('new-wallPic',(wallPic,id, firstname,lastname)=>{
+      io.emit('new-wallPic',wallPic,id, firstname,lastname)
+     })
 
       //////////////////////end of connection function
   });
