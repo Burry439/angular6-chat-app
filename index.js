@@ -113,16 +113,31 @@ io.on('connection', function(socket){
 ////////////////////post sockets//////////////////////////////////
   socket.on("new-post",(postInfo)=>{
 
-    console.log("post info  " +postInfo.from)
-
-    let post = new Post({
+    console.log("post info  " +postInfo.to)
+    let post;
+    if(postInfo.to)
+    {
+      post = new Post({
+        from: postInfo.from,
+        to: postInfo.to || '',
+        post: postInfo.post,
+        image:postInfo.image || '',
+        time:postInfo.time
+    })
+    }
+    else
+    {
+      post = new Post({
         from: postInfo.from,
         post: postInfo.post,
         image:postInfo.image || '',
         time:postInfo.time
     })
+    }
+
+
     post.save((err,post)=>{
-        Post.findById(post._id).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+        Post.findById(post._id).populate('from to','firstname lastname profilePic').exec((err,posts)=>{
           io.emit('new-post',posts)
       })
     })
@@ -338,8 +353,12 @@ socket.on("edit-post",(postInfo)=>{
 
 
      socket.on('image',(posts)=>{
+       console.log("inside posts with image " + posts.from.post)
       io.emit('new-post',posts)
      })
+
+
+
 
      socket.on('new-profilePic',(profilePic,id, firstname,lastname)=>{
       io.emit('new-profilePic',profilePic,id, firstname,lastname)

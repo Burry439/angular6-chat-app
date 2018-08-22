@@ -7,6 +7,11 @@ const postSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, ref: 'User',
         require: true
     },
+    to:
+    {
+        type: mongoose.Schema.Types.ObjectId, ref: 'User',
+        require: false
+    },
     post:
     {
         type:String,

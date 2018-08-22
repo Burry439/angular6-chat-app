@@ -69,16 +69,34 @@ router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
 
           console.log("resrult : " + result.url) 
 
+            let post;
 
-         let post = new Post(
-            {
-                from:postInfo.from,
-                post:postInfo.post,
-                image: result.url,       
-                comments: [],
-                time:postInfo.time    
-            }
-        )
+          if(postInfo.to)
+          {
+            post = new Post(
+                {
+                    from:postInfo.from,
+                    to:postInfo.to,
+                    post:postInfo.post,
+                    image: result.url,       
+                    comments: [],
+                    time:postInfo.time    
+                })
+          }
+          else
+          {
+            post = new Post(
+                {
+                    from:postInfo.from,
+                    post:postInfo.post,
+                    image: result.url,       
+                    comments: [],
+                    time:postInfo.time    
+                })
+          }
+
+      
+        
         
         
         console.log("the post " + post)
@@ -88,7 +106,7 @@ router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
                 ///mongoose will not let me populate after saving so i need to find the post again 
 
                 Post.findById(post._id)
-                .populate('from','firstname lastname profilePic').exec((err,posts)=>{
+                .populate('from to','firstname lastname profilePic').exec((err,posts)=>{
                     res.json(posts)
              }); 
         
@@ -109,7 +127,7 @@ router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
 
 router.get('/getposts',(req,res)=>{
 
-    Post.find({}).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+    Post.find({}).populate('from to','firstname lastname profilePic').exec((err,posts)=>{
         posts.reverse()
         res.json(posts)
     })
@@ -122,7 +140,7 @@ router.get('/getposts',(req,res)=>{
 
  router.get('/getmyposts', (req,res)=>{
      console.log(req.headers.authorization + " ffff ")
-     Post.find({from:req.headers.authorization}).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+     Post.find(     { $or: [ { from:req.headers.authorization} , { to: req.headers.authorization } ] }    ).populate('from to','firstname lastname profilePic').exec((err,posts)=>{
          console.log(posts)
          posts.reverse()
         res.json(posts)
@@ -131,7 +149,7 @@ router.get('/getposts',(req,res)=>{
 
  router.get('/getotherposts', (req,res)=>{
     console.log(req.headers.authorization + " ffff ")
-    Post.find({from:req.headers.authorization}).populate('from','firstname lastname profilePic').exec((err,posts)=>{
+    Post.find(  { $or: [ { from:req.headers.authorization} , { to: req.headers.authorization } ] }  ).populate('from to','firstname lastname profilePic').exec((err,posts)=>{
         console.log(posts)
         posts.reverse()
        res.json(posts)
