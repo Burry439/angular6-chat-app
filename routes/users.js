@@ -53,14 +53,12 @@ router.put('/profilephoto', upload.single('profilePic'), (req,res,next)=>
 {   
 
     if(req.fileValidationError) {
-        console.log("yo")
        return res.json("wrong");
   }
 
 
     const id = JSON.parse(req.headers.authorization)
     cloudinary.uploader.upload(req.file.path, function(result) { 
-        console.log("resrult : " + result.url) 
 
         User.findById(id.id, (err,user)=>{
             user.profilePic = result.secure_url
@@ -75,15 +73,12 @@ router.put('/wallphoto', upload.single('wallPic'), (req,res,next)=>
 {   
 
     if(req.fileValidationError) {
-        console.log("yo")
        return res.json("wrong");
   }
 
 
     const id = JSON.parse(req.headers.authorization)
     cloudinary.uploader.upload(req.file.path, function(result) { 
-        console.log("resrult : " + result.url) 
-
         User.findById(id.id, (err,user)=>{
             user.wallPic = result.secure_url
             user.save((err,updatedObject)=>{
@@ -100,8 +95,6 @@ router.put('/wallphoto', upload.single('wallPic'), (req,res,next)=>
 
 
 router.post('/register',(req,res,next)=>{
-    console.log(req.body)
-    console.log(req.file)
     let newUser = new User({
         firstname: req.body.firstname,
         email: req.body.email,
@@ -116,7 +109,6 @@ router.post('/register',(req,res,next)=>{
     User.findOne({email:req.body.email},(err,user)=>{
         if(user)    
         {     
-            console.log("Already created an account with this email")
             return res.json({success: 'false', msg: 'Already created an account with this email'})
         }
         else
@@ -187,16 +179,13 @@ router.post('/authenticate', (req,res,next)=>{
 
 router.get('/profile', passport.authenticate('jwt', {session: false}), (req,res)=>{                                                                         
     User.findById(req.user._id,(err,user)=>{
-                console.log(user.attending)
                 res.json(user)     
     })
 })
 
 router.get('/otherprofile', (req,res)=>{  
-    console.log(req.headers.authorization)
      
     User.findById(req.headers.authorization,(err,user)=>{
-                console.log(user)
                 res.json(user)     
     })
 })

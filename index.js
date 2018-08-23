@@ -67,7 +67,6 @@ io.on('connection', function(socket){
 
   socket.on("add-new-comment",(commentInfo)=>{
 
-    console.log(commentInfo)
     let comment = new Comment({
         post: commentInfo.postId,
         from: commentInfo.from,
@@ -78,7 +77,6 @@ io.on('connection', function(socket){
         Post.findById(commentInfo.postId,(err,post)=>{
           post.comments.push(comment._id)
           post.save((err,post)=>{
-            console.log( commentInfo)
             io.emit('new-comment',post, commentInfo.comment,commentInfo.from, commentInfo.postId, commentInfo.firstname,commentInfo.lastname)
           })
         })
@@ -89,7 +87,6 @@ io.on('connection', function(socket){
     socket.on("delete-comment",(commentId)=>{
 
       Comment.findByIdAndRemove(commentId,(err,comment)=>{
-        console.log(comment)
         io.emit('deleted-comment',comment)
       })
     
@@ -97,7 +94,6 @@ io.on('connection', function(socket){
 
     socket.on("edit-comment",(commentInfo)=>{
       Comment.findById(commentInfo.id,(err,comment)=>{
-        console.log(comment)
         comment.comment = commentInfo.comment
         comment.save((err,comment)=>{
           io.emit('edited-comment',comment)
@@ -113,7 +109,6 @@ io.on('connection', function(socket){
 ////////////////////post sockets//////////////////////////////////
   socket.on("new-post",(postInfo)=>{
 
-    console.log("post info  " +postInfo.to)
     let post;
     if(postInfo.to)
     {
@@ -145,10 +140,8 @@ io.on('connection', function(socket){
 
 socket.on("delete-post",(postId)=>{
 
-  console.log("post info  " +postId)
 
   Post.findByIdAndRemove(postId,(err,post)=>{
-    console.log(post)
     io.emit('deleted-post',post)
   })
 
@@ -157,13 +150,10 @@ socket.on("delete-post",(postId)=>{
 
 socket.on("edit-post",(postInfo)=>{
 
-  console.log("post info  " + postInfo._id)
 
   Post.findById(postInfo._id,(err,post)=>{
-    console.log(post.post)
 
     post.post = postInfo.post
-    console.log(post.post)
     post.save((err,post)=>{
       io.emit('edited-post',post)
     })
@@ -178,7 +168,6 @@ socket.on("edit-post",(postInfo)=>{
         User.findById(user,(err,user)=>{
           user.online = true;
           user.socketId = socket.id
-           console.log(socket.id + " has connected")
          user.save(()=>{
              User.find({},(err,user)=>{
                io.emit('updated-list',user)
@@ -195,7 +184,6 @@ socket.on("edit-post",(postInfo)=>{
              if(user[0] != undefined)
              {
               user[0].online = false
-              console.log("the query " + user + ": ")
               user[0].save(()=>{
   
                   User.find({},(err,user)=>{
@@ -203,11 +191,6 @@ socket.on("edit-post",(postInfo)=>{
                   })
               })
              }
-             else
-             {
-               console.log("to slow")
-             }
-          
       })
     })
 
@@ -231,14 +214,12 @@ socket.on("edit-post",(postInfo)=>{
 ////////////chat sockets/////////////////////////
 
     socket.on('join-room',(roomId)=>{
-      console.log("joined " + roomId)
       socket.join(roomId)
     })
 
 
 
     socket.on('left-room',(roomId)=>{
-      console.log("left " + roomId)
       socket.leave(roomId)
     })
 
@@ -257,7 +238,6 @@ socket.on("edit-post",(postInfo)=>{
       {
           you = chatInfo.you.id
       }
-      console.log("chat info " + you + ":::::::::::")
 
       //////////////////////////////////////////////////////////////
 
@@ -268,7 +248,6 @@ socket.on("edit-post",(postInfo)=>{
         let theChat;
 
       
-          console.log("yes array " + chat)
           theChat = chat[0]
           chatInfo.chatId = chat[0]._id
 
@@ -276,20 +255,11 @@ socket.on("edit-post",(postInfo)=>{
         theChat.save(()=>{
 
                 usersInRoom = io.sockets.adapter.rooms[theChat._id]
-                 console.log("users in this room " +usersInRoom)
 
                 User.findById(you,(err,user)=>{
-                    // if(!usersInRoom.sockets.hasOwnProperty(user.socketId))
-                    // {
-                        // console.log("add to room")
-                        // console.log("your socket id  "+chatInfo.me)
-                        // let me = {_id:chatInfo.me.id}
+              
                         io.to(user.socketId).emit('got-message', chatInfo.me);    
-                    // }
-                    // else
-                    // {
-                       console.log("already in room")
-                    // }
+    
                   }) 
           io.to(theChat._id).emit('message', {type:'new-message', chat: {roomId:theChat._id ,msg:chatInfo.msg,from:chatInfo.me.id, date:chatInfo.date, time:chatInfo.time,seen:false} });
         })
@@ -315,7 +285,6 @@ socket.on("edit-post",(postInfo)=>{
           you = chatInfo.you.id
       }
       
-      console.log(chatInfo)
       Chat.find({$or:[ {users:[chatInfo.me.id, you]  } , {users:[you,chatInfo.me.id]}]},(err,chat)=>{
           if(chat[0].messages[chat[0].messages.length - 1].seen != undefined)
           {
@@ -353,7 +322,6 @@ socket.on("edit-post",(postInfo)=>{
 
 
      socket.on('image',(posts)=>{
-       console.log("inside posts with image " + posts.from.post)
       io.emit('new-post',posts)
      })
 

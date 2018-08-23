@@ -52,22 +52,17 @@ router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
     let image = ''
 
     
-    console.log(req.file)
 
     let postInfo = JSON.parse(req.body.from)
 
-// console.log("from::::::::::::::: " + postInfo.post)
 
     if(req.fileValidationError) {
-        console.log("yo")
        return res.json("wrong");
   }
         
          cloudinary.uploader.upload(req.file.path, (result)=> { 
 
-            console.log("Inside cloudinary function .........................")
 
-          console.log("resrult : " + result.url) 
 
             let post;
 
@@ -99,7 +94,6 @@ router.post('/uploadImage', upload.single('Pic'),(req,res,next)=>
         
         
         
-        console.log("the post " + post)
         
             post.save((err,post)=>{
 
@@ -139,25 +133,20 @@ router.get('/getposts',(req,res)=>{
 
 
  router.get('/getmyposts', (req,res)=>{
-     console.log(req.headers.authorization + " ffff ")
      Post.find(     { $or: [ { from:req.headers.authorization} , { to: req.headers.authorization } ] }    ).populate('from to','firstname lastname profilePic').exec((err,posts)=>{
-         console.log(posts)
          posts.reverse()
         res.json(posts)
     })
  })
 
  router.get('/getotherposts', (req,res)=>{
-    console.log(req.headers.authorization + " ffff ")
     Post.find(  { $or: [ { from:req.headers.authorization} , { to: req.headers.authorization } ] }  ).populate('from to','firstname lastname profilePic').exec((err,posts)=>{
-        console.log(posts)
         posts.reverse()
        res.json(posts)
    })
 })
 
  router.get('/getcomments',(req,res)=>{
-    console.log( " yo  " + " " +req.headers.authorization)
     Comment.findById(req.headers.authorization).populate('from','firstname lastname profilePic').exec((err,comment)=>{
         res.json(comment)
     })

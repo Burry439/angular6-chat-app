@@ -20,11 +20,9 @@ router.post('/getchat',(req,res)=>{
 
     Chat.find({$or:[ {users:[req.body.me, you]  } , {users:[you,  req.body.me]}   ]} ,(err,chat)=>{
 
-        //  console.log(chat)
 
         if(chat.length)
         {   
-            console.log("found ")
             res.send(chat)
         }
         else
@@ -35,7 +33,6 @@ router.post('/getchat',(req,res)=>{
                 
             })
             chat.save(()=>{
-                console.log("not found ")
                 res.send(chat)
             })
             
